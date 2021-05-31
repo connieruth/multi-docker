@@ -1,0 +1,20 @@
+language: generic
+sudo: required
+
+services:
+  - docker
+before_install:
+  - docker build -t connieruth/react-test -f ./client/Dockerfile.dev ./client
+script:
+  - docker run -e CI=true connieruth/react-test npm test
+after_success:
+  - docker build -t connieruth/multi-client ./client
+  - docker build -t connieruth/multi-nginx ./nginx
+  - docker build -t connieruth/multi-server ./server
+  - docker build -t connieruth/multi-worker ./worker
+# log in to docker
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  - docker push connieruth/multi-client
+  - docker push connieruth/multi-nginx
+  - docker push connieruth/multi-server
+  - docker push connieruth/multi-worker
